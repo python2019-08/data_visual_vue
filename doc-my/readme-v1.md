@@ -1,0 +1,1 @@
+v1的方案 每个页面包括main-left、main-right、main-middle， 即 每个页面 依然会创建自己独立的 main-middle 组件实例，从而导致每次切换页面时，都会重新创建一个新的、独立的地图或三维场景。
