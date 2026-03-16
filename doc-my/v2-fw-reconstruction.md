@@ -1,0 +1,24 @@
+# 1. 框架重构
+## 1.1 问题描述
+v1的方案 每个页面包括main-left、main-right、main-middle， 即 每个页面 依然会创建自己独立的 main-middle 组件实例，从而导致每次切换页面时，都会重新创建一个新的、独立的地图或三维场景。
+这效率低下，也违背了希望在不同页面间保持同一个场景状态的初衷。
+
+## 1.2新的重构方案：提升组件层级
+最稳定、最有效的方法是将 main-middle 组件从各个页面（Page01.vue, HomePage.vue 等）中完全移除，然后将其提升到应用的主布局文件（很可能是 App.vue）中，与 <router-view> 同级。
+
+这个方案的优势在于：
+单一实例：main-middle 组件（也就是您的地图/3D场景）只会被创建一次，在整个应用的生命周期内持续存在。
+状态保持：当您通过路由在不同页面间切换时，main-middle 不会被销毁和重建，因此地图的缩放、视角、加载的模型等所有状态都会被完整保留。
+性能提升：避免了切换页面时重复初始化和渲染重量级三维场景所带来的巨大性能开销。
+
+## 1.3最终重构方案：修改 Layout.vue
+
+我的计划如下：
+(1)读取 Layout.vue：首先，我会读取 src/layout/Layout.vue 的内容，了解其现有结构。
+(2)创建 MainMiddle.vue：在 src/components/ 目录下创建一个独立的 MainMiddle.vue 组件，用于封装 Cesium 场景的初始化和渲染逻辑。这个组件将是单例的，在整个应用生命周期中只会被创建一次。
+(3)修改 Layout.vue：
+    在 Layout.vue 中导入并使用 MainMiddle.vue。
+    将 <router-view>（用于显示 Page01.vue、HomePage.vue 等页面内容）的样式进行调整，使其不再占据整个屏幕，而是为 MainMiddle 留出空间。
+(4)修改页面组件（例如 Page01.vue）：
+    从页面组件中彻底移除所有与 main-middle 相关的模板代码、脚本逻辑和样式。
+

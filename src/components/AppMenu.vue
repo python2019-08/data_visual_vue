@@ -50,6 +50,7 @@ const menuItems = computed(() =>
   font-size: 16px;
   color: #fff;
   text-decoration: none;
+  background-color: rgba(0, 0, 0, 50%); /* Add a semi-transparent background */
   border-radius: 4px;
   transition: background-color 0.3s, color 0.3s;
   &:hover {

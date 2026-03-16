@@ -22,6 +22,21 @@ const props = defineProps<PropsType>()
   background-image: url('@/assets/images/panel_body_bg.png');
   background-repeat: no-repeat;
   background-size: 100% 100%;
+  &::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    content: '';
+    background-color: rgba(0, 0, 0, 50%); /* Adjust opacity as needed */
+  }
+  .panel-header,
+  .panel-body {
+    position: relative;
+    z-index: 2; /* Ensure content is above the overlay */
+  }
   .panel-header {
     display: flex;
     align-items: center;
@@ -44,6 +59,9 @@ const props = defineProps<PropsType>()
     height: calc(100% - 65px);
     padding: 0 10px 10px;
     overflow: hidden;
+    background-image: url('@/assets/images/panel_body_bg.png');
+    background-repeat: no-repeat;
+    background-size: 100% 100%;    
   }
 }
 </style>

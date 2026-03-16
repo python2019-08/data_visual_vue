@@ -81,10 +81,9 @@ export default defineConfig({
     open: true,
     proxy: {
       '/osm': {
-        target: 'https://maps.wikimedia.org',
+        target: 'http://tile.stamen.com', // 切换到 Stamen 的 HTTP 服务进行诊断
         changeOrigin: true,
-        secure: false, // 禁用 SSL 证书验证
-        rewrite: (path) => path.replace(/^\/osm/, '/osm-intl'),
+        rewrite: (path) => path.replace(/^\/osm/, '/toner-lite'),
       },
     },
   },
