@@ -41,7 +41,86 @@ onMounted(() => {
 
   // 隐藏 Cesium 的版权信息
   viewer.cesiumWidget.creditContainer.style.display = 'none'
-})
+
+
+  const maxPitch = Cesium.Math.toRadians(-20.0) // 设置最大俯仰角，防止视角过平
+
+  // 限制相机缩放范围
+  viewer.scene.screenSpaceCameraController.minimumZoomDistance = 1000 // 最近距离1000米
+  viewer.scene.screenSpaceCameraController.maximumZoomDistance = 40000000 // 最远距离4000万米
+
+  // viewer.scene.preRender.addEventListener(() => {...}) 中限制相机俯仰角度范围的代码如果 也移到  
+  // viewer.camera.changed.addEventListener(() => {...}) 中是不是更好​???
+  // 答： 完全正确的。将限制俯仰角的逻辑从 `preRender` 移动到 `camera.changed` 事件中，在大多数情况下是**更好**的选择。
+  // 
+  // ### 为什么 `camera.changed` 更好？
+  // 
+  // 1.  **性能更高**：
+  //     *   `preRender` 事件在**每一帧**都会触发，即使相机完全没有移动。这意味着您的代码会以每秒 30-60 次的频率不断
+  //          地检查俯仰角，这会带来不必要的计算开销。
+  //     *   `camera.changed` 事件只在**相机参数发生变化时**（例如用户平移、缩放、旋转之后）才会触发。这意味着您的检查逻辑只在需要时才运行，大大降低了 CPU 的负担。
+  // 2.  **逻辑更清晰**：
+  //     *   将所有与“相机变化后进行校正”相关的逻辑（如限制平移范围、限制俯仰角）都放在同一个 `camera.changed` 
+  //         事件监听器中，会让代码的意图更清晰，也更便于维护。
+    
+  
+  //---------- 限制地图可视范围 和 相机俯仰角范围 ----------  
+  const boundary = { // 地图可视范围 （经纬度范围）
+    west: 73.0,
+    south: 3.0,
+    east: 135.0,
+    north: 54.0
+  }
+
+  
+    
+  function on_cameraChanged(){
+    const currentPosition = viewer.camera.positionCartographic
+    const currentLon = Cesium.Math.toDegrees(currentPosition.longitude)
+    const currentLat = Cesium.Math.toDegrees(currentPosition.latitude)
+    const currentPitch = viewer.camera.pitch
+
+    // 计算限制后的目标值
+    const clampedLon = Cesium.Math.clamp(currentLon, boundary.west, boundary.east)
+    const clampedLat = Cesium.Math.clamp(currentLat, boundary.south, boundary.north)
+    const clampedPitch = Math.min(currentPitch, maxPitch)
+
+    // 检查是否有任何值需要被修正
+    if (
+      clampedLon !== currentLon ||
+      clampedLat !== currentLat ||
+      clampedPitch !== currentPitch
+    ) {
+      // 原文链接：https://blog.csdn.net/no_money000/article/details/144405684     
+      viewer.camera.changed.removeEventListener(on_cameraChanged) // 先取消监听
+      // 先静止鼠标中键对相机倾斜角的移动
+      viewer.scene.screenSpaceCameraController.enableTilt = false;  
+ 
+      viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(
+          clampedLon,
+          clampedLat,
+          currentPosition.height
+        ),
+        orientation: {
+          heading: viewer.camera.heading,
+          pitch: clampedPitch, // 使用修正后的俯仰角
+          roll: viewer.camera.roll
+        },
+        duration: 0.0, // 立即移动
+        // 当视角修正完成，再次开启监听
+        complete: function () {
+              viewer.scene.screenSpaceCameraController.enableTilt = true;
+              viewer.camera.changed.addEventListener(on_cameraChanged); 
+        }, 
+
+      })
+    }
+  }
+
+  viewer.camera.changed.addEventListener( on_cameraChanged)
+
+})// end-of  onMounted(...)
 </script>
 
 <style scoped>
