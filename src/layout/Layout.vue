@@ -22,8 +22,8 @@
 <!-- ------------------------------ -->
 <script setup lang="ts">
 import LayoutHeader from '@/layout/LayoutHeader.vue'
-import MainMiddle from '@/components/MainMiddle.vue'
-import AppMenu from '@/components/AppMenu.vue'
+import MainMiddle from '@/layout/MainMiddle.vue'
+import AppMenu from '@/layout/AppMenu.vue'
 </script>
 
 <!-- ------------------------------ -->

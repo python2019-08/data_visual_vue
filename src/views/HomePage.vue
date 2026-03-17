@@ -43,7 +43,7 @@ const loading = reactive({
 const current = ref('')
 
 onMounted(() => {
-  
+
 })
 </script>
 

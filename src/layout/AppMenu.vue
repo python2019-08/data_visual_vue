@@ -14,6 +14,7 @@ active-class="is-active" 会在当前路由匹配该链接时，自动为 <route
       :to="item.path"
       class="menu-item"
       active-class="is-active"
+      @click="handleMenuClick(item.path)"
     >
       {{ item.title }}
     </router-link>
@@ -23,8 +24,25 @@ active-class="is-active" 会在当前路由匹配该链接时，自动为 <route
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { sceneState, type SceneState } from '@/utils/sceneController'
 
 const router = useRouter()
+
+// 定义从路由路径到场景状态的映射
+const sceneStateMap: Record<string, SceneState> = {
+  '/': 'HOME',
+  '/page01': 'FLOOR_1',
+  '/page02': 'FLOOR_2'
+}
+
+// 点击菜单项时触发的回调函数
+const handleMenuClick = (path: string) => 
+{
+  const newState = sceneStateMap[path]
+  if (newState) {
+    sceneState.activeView = newState
+  }
+}
 
 // 获取所有顶层路由，并过滤掉没有标题的
 const menuItems = computed(() =>

@@ -5,40 +5,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, watch } from 'vue'
 import * as Cesium from 'cesium'
+import { sceneState, type SceneState } from '@/utils/sceneController'
 
-onMounted(() => {
-  // 初始化 Cesium Viewer
-  const viewer = new Cesium.Viewer('cesium-container-shared', {
-    // baseLayer: new Cesium.ImageryLayer(
-    //   new Cesium.UrlTemplateImageryProvider({
-    //     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    //     subdomains: ['a', 'b', 'c']
-    //   })
-    // ),
-    infoBox: false,
-    selectionIndicator: false,
-    navigationHelpButton: false,
-    animation: false,
-    timeline: false,
-    fullscreenButton: false,
-    geocoder: false,
-    homeButton: false,
-    sceneModePicker: false,
-    baseLayerPicker: false,
-  })
-
-  // 设置相机初始视角
-  viewer.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(103.946, 30.66, 1000),
-    orientation: {
-      heading: Cesium.Math.toRadians(0),
-      pitch: Cesium.Math.toRadians(-90),
-      roll: 0.0,
-    },
-  })
-
+function cameraLimit( viewer: Cesium.Viewer) 
+{
   // 隐藏 Cesium 的版权信息
   viewer.cesiumWidget.creditContainer.style.display = 'none'
 
@@ -118,9 +90,116 @@ onMounted(() => {
 
       })
     }
-  }
+  }// end-of  on_cameraChanged(...)
 
   viewer.camera.changed.addEventListener( on_cameraChanged)
+}//end-of  cameraLimit()
+
+function loadScene( viewer: Cesium.Viewer)
+{
+  // 1. 一次性加载所有模型资源, 并默认隐藏
+  const buildingModel = viewer.entities.add({
+    name: '整栋楼',
+    position: Cesium.Cartesian3.fromDegrees(116.39, 39.9, 0),
+    model: {
+      uri: '/models/building.glb', // 请替换为您的模型路径
+      show: false,
+      scale: 0.03
+    }
+  })
+ 
+  const floor1Model = viewer.entities.add({
+    name: '一楼',
+    position: Cesium.Cartesian3.fromDegrees(116.39, 39.9, 0),
+    model: {
+      uri: '/models/floor1.glb', // 请替换为您的模型路径
+      show: false,
+      scale: 0.03
+    }
+  })
+ 
+  const floor2Model = viewer.entities.add({
+    name: '二楼',
+    position: Cesium.Cartesian3.fromDegrees(116.39, 39.9, 0),
+    model: {
+      uri: '/models/floor2.glb', // 请替换为您的模型路径
+      show: false,
+      scale: 0.03
+    }
+  })
+ 
+  // 2. 监听场景状态变化, 控制模型显隐
+  watch(
+    () => sceneState.activeView,
+
+    (newView: SceneState) => {
+      console.log('newView: SceneState。。。。。。。。。。。')
+      // 首先, 隐藏所有内容
+      viewer.scene.globe.show = false
+      buildingModel.show = false
+      floor1Model.show = false
+      floor2Model.show = false
+ 
+      // 然后, 根据新状态显示对应的内容
+      switch (newView) {
+        case 'HOME':
+          console.log('.......camera--HOME')
+          viewer.scene.globe.show = true
+          buildingModel.show = true
+          viewer.flyTo(buildingModel)
+          break
+        case 'FLOOR_1':
+          console.log('.......camera--FLOOR_1')
+          floor1Model.show = true
+          viewer.flyTo(floor1Model)
+          break
+        case 'FLOOR_2':
+          console.log('.......camera--FLOOR_2')
+          floor2Model.show = true
+          viewer.flyTo(floor2Model)
+          break
+      }
+    },
+    { immediate: true } // immediate: true 确保初始状态被正确设置
+  )
+}
+
+onMounted(() => {
+  // 初始化 Cesium Viewer
+  const viewer = new Cesium.Viewer('cesium-container-shared', {
+    // baseLayer: new Cesium.ImageryLayer(
+    //   new Cesium.UrlTemplateImageryProvider({
+    //     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    //     subdomains: ['a', 'b', 'c']
+    //   })
+    // ),
+    infoBox: false,
+    selectionIndicator: false,
+    navigationHelpButton: false,
+    animation: false,
+    timeline: false,
+    fullscreenButton: false,
+    geocoder: false,
+    homeButton: false,
+    sceneModePicker: false,
+    baseLayerPicker: false,
+  })
+
+  // 设置相机初始视角
+  viewer.camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(103.946, 30.66, 1000),
+    orientation: {
+      heading: Cesium.Math.toRadians(0),
+      pitch: Cesium.Math.toRadians(-90),
+      roll: 0.0,
+    },
+  })
+
+  cameraLimit(viewer)
+  // ----------------------------------------------------------------------
+
+  // --- 场景管理核心 ---
+  loadScene(viewer)  
 
 })// end-of  onMounted(...)
 </script>
