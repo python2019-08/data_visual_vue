@@ -29,6 +29,14 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       title: '功能页面一'
     }
+  },
+  {
+    path: '/page02',
+    name: 'Page02',
+    component: () => import('@/views/Page02.vue'),
+    meta: {
+      title: '功能页面二'
+    }
   }
 ]
 

@@ -64,17 +64,19 @@ onMounted(() => {
   //         事件监听器中，会让代码的意图更清晰，也更便于维护。
     
   
-  //---------- 限制地图可视范围 和 相机俯仰角范围 ----------  
+  //---------- 限制地图可视范围 和 相机俯仰角范围 ---------- 
+  // 成都市武侯区的经纬度范围： 东经：103.9458° ～ 104.0925° ，北纬：30.5753° ～ 30.6636° 
   const boundary = { // 地图可视范围 （经纬度范围）
-    west: 73.0,
-    south: 3.0,
-    east: 135.0,
-    north: 54.0
+    west: 103.9458,
+    south: 30.5753,
+    east: 104.0925,
+    north: 30.6636
   }
 
   
     
-  function on_cameraChanged(){
+  function on_cameraChanged()
+  {
     const currentPosition = viewer.camera.positionCartographic
     const currentLon = Cesium.Math.toDegrees(currentPosition.longitude)
     const currentLat = Cesium.Math.toDegrees(currentPosition.latitude)
